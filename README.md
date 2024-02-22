@@ -5,6 +5,6 @@ There is a clear separation of roles between those that create and train models 
 
 GenEng practitioners will need to have many of the same skills of traditional application development, including scalable architecting, integrating enterprise systems, and understanding requirements from the business user. These skills will be augmented with the nuances of building generative AI applications, such as involving the business domain experts in validating aspects of prompt engineering and choosing the right LLM based on price/performance and outcomes
 
-The rise of GenEng: How AI changes the developer role
+[The rise of GenEng: How AI changes the developer role](https://cloud.google.com/blog/products/ai-machine-learning/the-rise-of-geneng-how-ai-changes-the-developer-role)https://cloud.google.com/blog/products/ai-machine-learning/the-rise-of-geneng-how-ai-changes-the-developer-role
 
-Watch: The Rise of GenEng
+
