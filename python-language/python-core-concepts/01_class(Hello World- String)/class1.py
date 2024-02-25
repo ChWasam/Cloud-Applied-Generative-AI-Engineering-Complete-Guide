@@ -11,3 +11,10 @@ print("wasam")
 # Result 
 # error: Incompatible types in assignment (expression has type "int", variable has type "str")  [assignment]
 # Found 1 error in 1 file (checked 1 source file)
+
+
+
+name : str = "Chaudhry Wasam Ur Rehman"
+print (name)
+print(type(name))
+print(id(name))
