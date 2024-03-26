@@ -21,5 +21,35 @@
 def even_numbers_generator (num):
     for i in range(2,num+1,2):
         yield  i 
+I = iter(even_numbers_generator(10))
+
 for num in even_numbers_generator(10):
     print(num)
+
+
+#  checked the internal working on python shell 
+
+# Last login: Sat Mar 23 14:52:47 on ttys102
+# wasamchaudhry@Chaudhrys-MacBook-Pro ~ % python3 
+# Python 3.12.2 (v3.12.2:6abddd9f6a, Feb  6 2024, 17:02:06) [Clang 13.0.0 (clang-1300.0.29.30)] on darwin
+# Type "help", "copyright", "credits" or "license" for more information.
+# >>> def even_numbers_generator (num):
+# ...     for i in range(2,num+1,2):
+# ...         yield  i 
+# ... 
+# >>> I = iter(even_numbers_generator(10))
+# >>> next(I)
+# 2
+# >>> 
+# >>> next(I)
+# 4
+# >>> next(I)
+# 6
+# >>> next(I)
+# 8
+# >>> next(I)
+# 10
+# >>> next(I)
+# Traceback (most recent call last):
+#   File "<stdin>", line 1, in <module>
+# StopIteration
