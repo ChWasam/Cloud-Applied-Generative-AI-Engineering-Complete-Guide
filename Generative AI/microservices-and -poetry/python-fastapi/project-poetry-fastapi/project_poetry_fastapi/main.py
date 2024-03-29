@@ -6,6 +6,6 @@ app = FastAPI()
 def read_root():
     return{"Hello":"World"}
 
-@app.get("/city")
+@app.get("/city/")
 def city():
-    return{"city":"Cat"}
+    return{"city":"Islamabad"}  
