@@ -2,10 +2,12 @@
 
 fruit:str = "Banana" 
 color:str = input("Enter color of fruit")
+color = color.upper()
+# print(color)
 
-if color == "Green":
+if color == "GREEN":
     print(fruit,"is Unripe")
-elif color == "Yellow":
+elif color == "YELLOW":
     print(fruit,"is Ripe")
-elif color == "Brown":
+elif color == "BROWN":
     print(fruit,"is Overripe")

@@ -2,9 +2,11 @@
 
 
 age :str = input("Enter the age of a person")
-type(age)
+print(type(age)) 
+# <class 'str'>
 int_age:int = int(age)
-type(int_age)
+print(type(int_age))
+# <class 'int'>
 
 if int_age < 1:
     print("Enter Correct age")
