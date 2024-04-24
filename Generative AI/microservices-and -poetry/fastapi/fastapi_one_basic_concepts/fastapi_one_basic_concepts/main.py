@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -86,6 +87,40 @@ def subject(subject_id:str,q:str|None = None, short:bool = False):
 # async def read_user_item(
 # user_id: int, item_id: str, q: str | None = None, short: bool = False
 
+
+#  First install pydantic
+#  from pydantic import BaseModel
+
+class Product(BaseModel):
+    name:str
+    description:str| None = None
+    price:float
+
+@app.post("/products/")
+def create_item(product:Product):
+    # return product
+    return product.name
+# update value  (we will use put)
+
+@app.put("/products/{product_id}")
+def update_product(product_id:int, product:Product):
+    return {"product_id":product_id, **product.model_dump()}
+    # return {"product_id":product_id, **product.dict()}
+#  both work well but dict is depricated  
+
+
+#  For query parameter result can be 
+# result = ("item_id": item_id,**item.dict)}
+# if q:
+# result.update(("q": q})
+# return result
+
+
+# Body (embed=True)):
+# matlab sirf yeh jason accept kara ga 
+
+
+    
 
     
     
