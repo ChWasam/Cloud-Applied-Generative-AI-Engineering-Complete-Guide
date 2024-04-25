@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,Body
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -117,7 +117,13 @@ def update_product(product_id:int, product:Product):
 
 
 # Body (embed=True)):
-# matlab sirf yeh jason accept kara ga 
+# matlab sirf yeh json accept kara ga 
+
+@app.post("/products/product")
+def fav_product (product:str = Body(embed=True)):
+    return product
+
+
 
 
     
