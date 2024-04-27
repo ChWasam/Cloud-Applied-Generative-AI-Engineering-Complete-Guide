@@ -2,7 +2,7 @@ FROM python:3.12
 RUN pip install poetry 
 LABEL maintainer = "ch.wasam@gmail.com"
 WORKDIR /copy/
-ADD . ./copy/
+ADD . /copy/
 RUN poetry install
 RUN poetry config virtualenvs.create false 
 EXPOSE 8000
