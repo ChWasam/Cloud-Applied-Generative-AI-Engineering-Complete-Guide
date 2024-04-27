@@ -3,7 +3,7 @@ RUN pip install poetry
 LABEL maintainer = "ch.wasam@gmail.com"
 WORKDIR /copy/
 ADD . /copy/
-RUN poetry install
 RUN poetry config virtualenvs.create false 
+RUN poetry install --no-root --no-cache --no-interaction
 EXPOSE 8000
 CMD ["poetry","run","uvicorn","app.main:app","--host","0.0.0.0", "--reload"]
