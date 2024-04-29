@@ -1,5 +1,7 @@
-from fastapi import FastAPI,Body
+from fastapi import FastAPI,Body,Depends
 from pydantic import BaseModel
+
+
 
 app = FastAPI()
 
@@ -122,6 +124,13 @@ def update_product(product_id:int, product:Product):
 @app.post("/products/product")
 def fav_product (product:str = Body(embed=True)):
     return product
+
+
+
+
+
+
+
 
 
 
