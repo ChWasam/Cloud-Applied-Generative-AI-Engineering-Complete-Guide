@@ -1,0 +1,10 @@
+version: "1.0.1"
+name: my_first_compose
+services:
+  api:
+    build:
+      context: ./docker_compose
+      dockerfile: Dockerfile
+    container_name: my_updated_compose_container
+    ports:
+      - "8001:8000"
