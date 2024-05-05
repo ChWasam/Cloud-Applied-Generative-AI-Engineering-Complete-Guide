@@ -16,6 +16,10 @@ status_code:int = response.status_code
 text :str = response.text
 
 headers : CaseInsensitiveDict = response.headers
+# yeh jo header ha yeh server ka response ka ha 
+#  server ka aupar yeh time hua ha 
+# server ke tamam info
+#  client sa bhi ak header ke info jati ha e.g browser konsa ha aur ip address konsa ha
 
 
 
