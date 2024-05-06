@@ -5,8 +5,8 @@ from requests.structures import CaseInsensitiveDict
 from fastapi import FastAPI
 
 data_authorization = {
-   "clientName": "ALI87",
-   "clientEmail": "ali87@example.com"
+   "clientName": "naf123",
+   "clientEmail": "nafs123@example.com"
 }
 data_order = {
   "bookId": 3,
@@ -35,10 +35,10 @@ def get_orderid() -> str:
     json_order_subittion_request: dict = order_subittion_request.json()
     orderId : str = json_order_subittion_request["orderId"]
     return orderId
-def get_all_orders() -> dict:
+def get_all_orders() -> list:
     headers: dict = {"Authorization": f"Bearer "+f"{accessToken}"}
     response_getting_orders : Response  = requests.get("https://simple-books-api.glitch.me/orders/",headers = headers ) 
-    json_response_getting_all_orders: dict = response_getting_orders.json()
+    json_response_getting_all_orders: list = response_getting_orders.json()
     return json_response_getting_all_orders
 def get_an_order() -> dict:
     headers: dict = {"Authorization": f"Bearer "+f"{accessToken}"}
@@ -60,6 +60,10 @@ def delete_an_order() -> int:
 
 if accessToken == None :
     accessToken = get_accessToken()
+if orderId == None :
+    orderId = get_orderid()
+
+
 
 app = FastAPI()
 @app.get("/authorization")
@@ -68,10 +72,10 @@ async def authorization() -> str|None:
 
 @app.get("/submitanorder")
 async def submit_an_order() -> str|None:
-    return get_orderid()
+    return orderId
 
 @app.get("/getallorders")
-async def get_orders() -> dict:
+async def get_orders() -> list:
     return get_all_orders()
 
 @app.get("/getanorder")
