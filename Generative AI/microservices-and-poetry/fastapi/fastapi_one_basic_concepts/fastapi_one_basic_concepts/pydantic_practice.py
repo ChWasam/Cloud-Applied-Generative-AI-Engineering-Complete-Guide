@@ -71,20 +71,24 @@
 
 
 # 888888888888888888888888888888888888888888888888888888888888888888888888888888888
+#  validator has been depricated 
+#  Use field_validator instead of validator 
 
-from pydantic import BaseModel,validator, EmailStr
+from pydantic import BaseModel,field_validator, EmailStr
 from typing import Any
 class User(BaseModel):
     id : int
     email: EmailStr
 
-@validator('id')
-def validate_id(cls:User, id:int):
-    if id >= 0:
-        raise ValueError(f"Id must be positive: {id}")
-    return id
+    @field_validator('id')
+    def validate_id(cls, id:int):
+        if id <= 0:
+            raise ValueError(f"Id must be positive: {id}")
+        return id
+    
+# validator must be written inside the class
 
-user = User(id = 0, email = "ch.wasam@gmai.com" )
+user = User(id = 1234, email = "ch.wasam@gmai.com" )
 
 user_json_str: str = user.model_dump_json()
 print(user_json_str, type(user_json_str))
