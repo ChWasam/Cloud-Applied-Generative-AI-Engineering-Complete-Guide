@@ -19,8 +19,8 @@ async def common_parameters(q: str | None = None, skip: int = 0, limit: int = 10
 #  We can pass classes as dependencies also 
 
 
-#  Yeh jo items aur users wali api ha yeh depend kar rahi ha common_parameters is ka aupr 
-#  Jab bhi yeh api hit ho ge pehla yeh function chala ga phiur api ka code chala ga 
+#  Yeh jo items aur users wali api ha yeh depend kar rahi ha common_parameters ka aupr 
+#  Jab bhi yeh api hit ho ge pehla yeh function chala ga phir api ka code chala ga 
 @app.get("/items/")
 async def read_items(commons: Annotated[dict, Depends(common_parameters)]):
     return commons["skip"]
