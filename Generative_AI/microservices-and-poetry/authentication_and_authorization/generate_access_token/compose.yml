@@ -1,0 +1,14 @@
+version: 1.0.1
+name: "generate_access_token"
+services:
+  auth-api-service:
+    build:
+      context: ./access_token
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    networks:
+      - auth-network
+
+networks:
+  auth-network:
