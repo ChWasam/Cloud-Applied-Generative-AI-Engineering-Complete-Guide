@@ -4,6 +4,8 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from typing import Annotated
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
 ALGORITHM:str = "HS256"
 SECRET_KEY:str = "A Secure Secret Key"
 def generate_access_token(subject:str , expire_delta:timedelta ):
@@ -66,12 +68,12 @@ def login(login_credentials:Annotated[OAuth2PasswordRequestForm,Depends(OAuth2Pa
     return {"access_token": access_token, "token_type":"bearer", "expire_in" : expiry_time.total_seconds()}
 # One that returns the list of all users
 @app.get("/users")
-def all_users():
+def all_users(token:Annotated[str,Depends(oauth2_scheme)]):
     return dummy_database
 
 # Other that takes access_token and return user all details
 @app.get("/users/me")
-def getting_user(token:str):
+def getting_user(token:Annotated[str ,Depends(oauth2_scheme)]):
     token = str(token)
     try:
         getting_back_user = jwt.decode(token,SECRET_KEY,algorithms=[ALGORITHM])
