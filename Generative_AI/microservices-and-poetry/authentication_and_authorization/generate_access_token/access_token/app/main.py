@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,Depends,HTTPException
+from fastapi.security import OAuth2PasswordRequestForm,OAuth2PasswordBearer
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
+from typing import Annotated
 
 ALGORITHM:str = "HS256"
 SECRET_KEY:str = "A Secure Secret Key"
@@ -30,6 +32,49 @@ def decode_token(token:str):
 def decoding_token(token:str):
     decode_result = decode_token(token = str(token))
     return decode_result
+
+dummy_database: dict[str,dict[str,str]] = {
+    "wasamChaudhry":{
+        "name":"Chaudhry Wasam Ur Rehman",
+        "username":"wasamChaudhry",
+        "email":"ch.wasam@gmail.com",
+        "password":"wasam223344"
+    },
+    "aliwali":{
+        "name":"Chaudhry Ali Raza",
+        "username":"aliwali",
+        "email":"aliwali@gmail.com",
+        "password":"ali223344"
+    }
+}
+
+
+@app.post("/login")
+def login(login_credentials:Annotated[OAuth2PasswordRequestForm,Depends(OAuth2PasswordRequestForm)]):
+    username_verified = dummy_database.get(login_credentials.username)
+    if not username_verified:
+        raise HTTPException(status_code=400 , detail=" Incorrect Username")
+    password_verified = username_verified["password"] == login_credentials.password
+    if not password_verified:
+        raise HTTPException(status_code=400, detail="Incorrect Password")
+    expiry_time = timedelta(minutes=20)
+    access_token = generate_access_token(subject = username_verified["username"], expire_delta = expiry_time )
+    return {"access_token": access_token, "token_type":"bearer", "expire_in" : expiry_time.total_seconds()}
+# One that returns the list of all users
+@app.get("/users")
+def all_users():
+    return dummy_database
+
+# Other that takes access_token and return user all details
+@app.get("/users/me")
+def getting_user(token:str):
+    token = str(token)
+    getting_back_user = jwt.decode(token,SECRET_KEY,algorithms=[ALGORITHM])
+    user_detail = dummy_database.get(getting_back_user["sub"])
+    return user_detail
+
+
+
 
 
 
