@@ -30,8 +30,12 @@ def decode_token(token:str):
 
 @app.get("/decode_token")
 def decoding_token(token:str):
-    decode_result = decode_token(token = str(token))
-    return decode_result
+    try:
+        decode_result = decode_token(token = str(token))
+        return decode_result
+    except JWTError as e:
+        return  {"error":str(e)}
+
 
 dummy_database: dict[str,dict[str,str]] = {
     "wasamChaudhry":{
@@ -57,7 +61,7 @@ def login(login_credentials:Annotated[OAuth2PasswordRequestForm,Depends(OAuth2Pa
     password_verified = username_verified["password"] == login_credentials.password
     if not password_verified:
         raise HTTPException(status_code=400, detail="Incorrect Password")
-    expiry_time = timedelta(minutes=20)
+    expiry_time = timedelta(minutes=1)
     access_token = generate_access_token(subject = username_verified["username"], expire_delta = expiry_time )
     return {"access_token": access_token, "token_type":"bearer", "expire_in" : expiry_time.total_seconds()}
 # One that returns the list of all users
@@ -69,14 +73,12 @@ def all_users():
 @app.get("/users/me")
 def getting_user(token:str):
     token = str(token)
-    getting_back_user = jwt.decode(token,SECRET_KEY,algorithms=[ALGORITHM])
-    user_detail = dummy_database.get(getting_back_user["sub"])
-    return user_detail
-
-
-
-
-
+    try:
+        getting_back_user = jwt.decode(token,SECRET_KEY,algorithms=[ALGORITHM])
+        user_detail = dummy_database.get(getting_back_user["sub"])
+        return user_detail
+    except JWTError as e:
+        return {"error": str(e)}
 
 
 
