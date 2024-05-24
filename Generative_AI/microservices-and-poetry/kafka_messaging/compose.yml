@@ -30,9 +30,12 @@ services:
     container_name: broker
     ports:
       - '9092:9092'
-    volumes:
-      - ./create_topic.sh:/usr/local/bin/create_topic.sh
-    entrypoint: ["sh","-c","/usr/local/bin/create_topic.sh"]
+    # volumes:
+    #   - ./create_topic.sh:/usr/local/bin/create_topic.sh
+    # entrypoint: ["sh","-c","/usr/local/bin/create_topic.sh"]
+    #  it was not working so far (even with wait and sleep ) we will try to make event through code in future 
+    #  Now we will create events manually through kafka UI
+    
     
     environment:
       KAFKA_NODE_ID: 1
