@@ -81,7 +81,3 @@ def getting_user(token:Annotated[str ,Depends(oauth2_scheme)]):
         return user_detail
     except JWTError as e:
         return {"error": str(e)}
-
-
-
-
