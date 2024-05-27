@@ -42,8 +42,7 @@ async def consume_messages(topic, bootstrap_servers):
         bootstrap_servers=bootstrap_servers,
         group_id="my-group",
         auto_offset_reset='earliest'
-    )
-
+    ) 
     # Start the consumer.
     await consumer.start()
     try:
@@ -68,6 +67,8 @@ async def lifespan(app: FastAPI)-> AsyncGenerator[None, None]:
     task = asyncio.create_task(consume_messages('todos', 'broker:19092'))
     create_db_and_tables()
     yield
+
+# Lifespan chalta ha shuru me aur akhar me. Koi bhi kam ham na shuru me aur akhar me karwana ho to wo lifespan ka through hota ha 
 
 
 app = FastAPI(lifespan=lifespan, title="Hello World API with DB", 
@@ -94,6 +95,7 @@ async def get_kafka_producer():
     await producer.start()
     try:
         yield producer
+    # This line is the crux of the function. It uses the yield keyword, a special construct in Python's asynchronous programming model. When this function is called, it pauses execution at this point and returns the producer object to the caller. The caller can then use the producer to send messages to Kafka.Importantly, when the caller is done using the producer, it resumes the execution of get_kafka_producer() at this point (after the yield statement).
     finally:
         await producer.stop()
 
