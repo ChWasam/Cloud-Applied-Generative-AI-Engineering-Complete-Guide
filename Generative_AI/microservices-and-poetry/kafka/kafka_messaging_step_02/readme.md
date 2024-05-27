@@ -1,5 +1,16 @@
 # 02_kafka_messaging
 
+# Understanding concepts related to Python for this code 
+
+
+### Understanding Yield
+```
+```
+
+### Understanding asyncio
+```
+```
+
 ### AIOKafkaProducer
 
 AIOKafkaProducer is a high-level, asynchronous message producer.
