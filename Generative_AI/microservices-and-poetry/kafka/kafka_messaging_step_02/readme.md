@@ -32,7 +32,29 @@ Key Concepts
 - Event Loop: The event loop is responsible for executing coroutines, handling events, and switching between tasks.
 - Tasks: Tasks wrap coroutines and schedule them to run on the event loop.
 
-c
+#### Basic Example
+
+Here’s a simple example to illustrate asynchronous functions and the await keyword:
+
+```
+import asyncio
+
+async def say_hello():
+    print("Hello")
+    await asyncio.sleep(1)
+    print("World")
+
+# Running the coroutine
+asyncio.run(say_hello())
+
+
+```
+
+#### Breaking Down the Example
+
+* async def say_hello(): Defines an asynchronous function.
+* await asyncio.sleep(1): Pauses the coroutine for 1 second without blocking the entire program.
+* asyncio.run(say_hello()): Runs the coroutine using the event loop.
 
 #### Running Multiple Coroutines Concurrently
 
@@ -124,10 +146,13 @@ asyncio.run(main())
 ```
 
 # What is an Event Loop?
+
 It runs in a loop and continuously checks for tasks that are ready to execute, runs them, and then waits for more tasks.
 
 ## asyncio.get_event_loop()
+
 asyncio.get_event_loop() is a function provided by the asyncio module to get the current event loop object.
+
 ```
 import asyncio
 
@@ -143,15 +168,17 @@ loop.run_until_complete(say_hello())
 ```
 
 ### What Does asyncio.get_event_loop() Do?
-* Retrieve the Current Event Loop:
-asyncio.get_event_loop() returns the current event loop for the current OS thread.
-If there is no current event loop set for the current OS thread, it creates a new event loop and sets it as the current event loop.
 
-* Run Until Complete:
-loop.run_until_complete(say_hello()) runs the say_hello coroutine until it completes.
-The event loop executes the coroutine and manages the asynchronous operations.
+- Retrieve the Current Event Loop:
+  asyncio.get_event_loop() returns the current event loop for the current OS thread.
+  If there is no current event loop set for the current OS thread, it creates a new event loop and sets it as the current event loop.
+
+- Run Until Complete:
+  loop.run_until_complete(say_hello()) runs the say_hello coroutine until it completes.
+  The event loop executes the coroutine and manages the asynchronous operations.
 
 ### Modern Approach: asyncio.run()
+
 ```
 import asyncio
 
@@ -162,9 +189,6 @@ async def say_hello():
 asyncio.run(say_hello())
 
 ```
-
-
-
 
 # AIOKafka
 
