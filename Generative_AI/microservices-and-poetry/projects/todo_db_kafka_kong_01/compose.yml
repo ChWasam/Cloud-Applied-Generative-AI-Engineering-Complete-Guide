@@ -1,0 +1,85 @@
+version: "3.9"
+
+name: project-01
+
+services:
+  api:
+    build:
+      context: ./service-01
+      dockerfile: Dockerfile.dev
+    depends_on:
+        - postgres_db
+    ports:
+      - "8085:8085"  # Expose container port 8000 to host port 8000  
+    volumes:
+      - ./service-01:/code
+ 
+
+  postgres_db:
+    image: postgres:latest  # Use the official PostgreSQL image
+    restart: always
+    container_name: PostgresCont
+    environment:
+        - POSTGRES_USER=wasam
+        - POSTGRES_PASSWORD=wasam_password
+        - POSTGRES_DB=wasam_database
+    ports:
+        - '5433:5432'
+    volumes:
+        - postgres_db:/var/lib/postgresql/data
+
+  broker:
+    image: apache/kafka:3.7.0
+    hostname: broker
+    # hostname aus waqt use karain ga jab ham container ka andar ho ga aur wahan sa access karain ga 
+    container_name: broker
+    #  container_name use karain ga jab container ka bahir sa access karain ga (dns ka tor pa work kara ga)
+    #  container ka nam ka sath sath ak dns ban jata ha jisa ham network ka through call kar sakta han 
+
+    #  Ham na same name rakha ta kah ham confuse na ho internal ya external use karna ho to 
+    ports:
+      - '9092:9092'
+    # volumes:
+    #   - ./create_topic.sh:/usr/local/bin/create_topic.sh
+    # entrypoint: ["sh","-c","/usr/local/bin/create_topic.sh"]
+    #  it was not working so far (even with wait and sleep ) we will try to make event through code in future 
+    #  Now we will create events manually through kafka UI
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT_HOST://localhost:9092,PLAINTEXT://broker:19092'
+      #  Kafka ka bootstrap server 19092 pa chal raha hota ha aur 9092 pa host chal raha hota ha 
+      # PLAINTEXT host ho jai ga 
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      #  ak hi ko dono roles
+      #  Jab kafka ka ak sa zyada server hota han to ak ko controller bnana hota ha aur baqio ko controller bnana hota ha 
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
+      KAFKA_LISTENERS: 'CONTROLLER://:29093,PLAINTEXT_HOST://:9092,PLAINTEXT://:19092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: '4L6g3nShT-eMCtK--X86sw'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'        
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: 'Local Kafka Cluster'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'broker:19092'
+      DYNAMIC_CONFIG_ENABLED: "true"
+    depends_on:
+      - broker
+
+volumes:
+  postgres_db:
+    driver: local
+
+networks:
+  default:
+    driver: bridge
