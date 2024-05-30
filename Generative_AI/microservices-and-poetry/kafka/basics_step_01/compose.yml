@@ -27,6 +27,7 @@ services:
       - POSTGRES_DB=mydatabase
     ports:
       - "5433:5432"
+    #  This volume is known as volume attachment
     volumes:
       - postgres_db:/var/lib/postgresql/data
 
