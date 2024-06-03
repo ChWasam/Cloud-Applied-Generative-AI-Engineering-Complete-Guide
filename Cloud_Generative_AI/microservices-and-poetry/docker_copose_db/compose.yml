@@ -1,19 +1,17 @@
-version: "0.0.1"
-
 name: project-01
-
 services:
   api:
+    container_name: "product"
+    hostname: "product"
     build:
-      context: ./service-01
+      context: ./product_service_01
       dockerfile: Dockerfile.dev
     depends_on:
         - postgres_db
     ports:
       - "8085:8085"  # Expose container port 8000 to host port 8000  
     volumes:
-      - ./service-01:/code
- 
+      - ./product_service_01:/code/
 
   postgres_db:
     image: postgres:latest  # Use the official PostgreSQL image
