@@ -3,6 +3,7 @@ from fastapi import FastAPI,Depends,HTTPException
 from app import settings
 from contextlib import asynccontextmanager
 from typing import Annotated
+import psycopg
 
 class Product(SQLModel, table=True):
     id : int|None = Field(default = None , primary_key= True )

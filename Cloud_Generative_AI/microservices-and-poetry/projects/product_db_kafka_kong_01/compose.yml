@@ -1,5 +1,6 @@
 name: project-01
 services:
+
   api:
     container_name: "product"
     hostname: "product"
@@ -13,6 +14,9 @@ services:
     volumes:
       - ./product_service_01:/code/
 
+
+
+
   postgres_db:
     image: postgres:latest  # Use the official PostgreSQL image
     restart: always
@@ -25,6 +29,11 @@ services:
         - '5433:5432'
     volumes:
         - postgres_db:/var/lib/postgresql/data
+
+
+
+
+
 volumes:
   postgres_db:
     driver: local
