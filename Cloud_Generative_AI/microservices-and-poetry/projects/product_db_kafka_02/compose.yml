@@ -1,6 +1,6 @@
 name: project-01
 services:
-  api:
+  product:
     container_name: "product"
     hostname: "product"
     build:
@@ -8,11 +8,24 @@ services:
       dockerfile: Dockerfile.dev
     depends_on:
       - broker
-      - postgres_db
     ports:
       - "8085:8085" # Expose container port 8000 to host port 8000
     volumes:
       - ./product_service_01:/code/
+
+  db_service_consumer:
+    container_name: "db_service_consumer"
+    hostname: "db_service_consumer"
+    build:
+      context: ./db_service_consumer_02
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - broker
+      - postgres_db
+    ports:
+      - "8001:8001" # Expose container port 8000 to host port 8000
+    volumes:
+      - ./db_service_consumer_02:/code/
 
   broker:
     image: apache/kafka:3.7.0

@@ -60,7 +60,7 @@ async def produce_message ():
 
 @asynccontextmanager
 async def lifespan(app:FastAPI):
-   await create_topic ()
+   await create_topic()
 #    create_table()
    yield
 
