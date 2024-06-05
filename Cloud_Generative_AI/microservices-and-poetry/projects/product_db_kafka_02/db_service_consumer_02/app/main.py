@@ -54,10 +54,10 @@ async def consume_message():
            new_msg = product_pb2.Product()
            new_msg.ParseFromString(msg.value)
            print(f"new_msg:{new_msg}")
-           msg_table = Product(name = new_msg.name, price = new_msg.price , is_available = new_msg.is_available )
-           print(f"new_msg:{msg_table}")
+           msg_to_db = Product(name = new_msg.name, price = new_msg.price , is_available = new_msg.is_available )
+           print(f"msg_to_db:{msg_to_db}")
            with Session(engine) as session:
-            session.add(msg_table)
+            session.add(msg_to_db)
             session.commit()
     finally:
         await consumer.stop()
