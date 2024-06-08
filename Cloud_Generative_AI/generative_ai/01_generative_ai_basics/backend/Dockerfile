@@ -22,7 +22,7 @@ RUN poetry config virtualenvs.create false
 # Install dependencies including development ones
 RUN poetry install 
 
-# Make port 8085 available to the world outside this container
+# Make port 8000 available to the world outside this container
 EXPOSE 8000
 
 # Run the app. CMD can be overridden when starting the container
