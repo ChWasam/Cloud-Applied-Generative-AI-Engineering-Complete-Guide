@@ -11,6 +11,18 @@ import logging
 
 import psycopg
 
+# Retry utility
+async def retry_async(func, retries=5, delay=2, *args, **kwargs):
+    for attempt in range(retries):
+        try:
+            return await func(*args, **kwargs)
+        except Exception as e:
+            print(f"Attempt {attempt + 1} failed: {e}")
+            if attempt < retries - 1:
+                await asyncio.sleep(delay)
+            else:
+                raise
+
 # Configure the logger 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,10 +66,11 @@ async def consume_message():
         group_id= f"{settings.KAFKA_CONSUMER_GROUP_ID_FOR_PRODUCT}",
         auto_offset_reset='earliest'
     )
-    await consumer.start()
+
+    await retry_async(consumer.start)
     try:
         async for msg in consumer:
-            # try:
+            try:
                 new_msg = product_pb2.Product()
                 new_msg.ParseFromString(msg.value)
                 print(f"new_msg:{new_msg}")
@@ -67,8 +80,8 @@ async def consume_message():
                     session.add(msg_to_db)
                     session.commit()
                     logger.info(f"Product Added to database:{msg_to_db} ")
-            # except Exception as e:
-            #     logger.info(f"Error Processing Message: {e} ")    
+            except Exception as e:
+                logger.info(f"Error Processing Message: {e} ")    
     finally:
         await consumer.stop()
 
