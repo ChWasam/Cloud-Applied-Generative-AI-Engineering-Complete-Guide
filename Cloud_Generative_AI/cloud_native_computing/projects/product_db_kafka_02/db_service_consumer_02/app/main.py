@@ -7,8 +7,13 @@ from typing import Annotated
 from app import product_pb2
 from app import settings
 import asyncio
+import logging
+
 import psycopg
 
+# Configure the logger 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class Product(SQLModel, table=True):
     id : int|None = Field(default = None , primary_key= True)
@@ -41,6 +46,7 @@ async def lifespan(app:FastAPI):
 
 # writing Consumer code 
 
+
 async def consume_message():
     consumer = AIOKafkaConsumer(
         f"{settings.KAFKA_TOPIC}",
@@ -51,14 +57,18 @@ async def consume_message():
     await consumer.start()
     try:
         async for msg in consumer:
-           new_msg = product_pb2.Product()
-           new_msg.ParseFromString(msg.value)
-           print(f"new_msg:{new_msg}")
-           msg_to_db = Product(name = new_msg.name, price = new_msg.price , is_available = new_msg.is_available )
-           print(f"msg_to_db:{msg_to_db}")
-           with Session(engine) as session:
-            session.add(msg_to_db)
-            session.commit()
+            # try:
+                new_msg = product_pb2.Product()
+                new_msg.ParseFromString(msg.value)
+                print(f"new_msg:{new_msg}")
+                msg_to_db = Product(name = new_msg.name, price = new_msg.price , is_available = new_msg.is_available )
+                print(f"msg_to_db:{msg_to_db}")
+                with Session(engine) as session:
+                    session.add(msg_to_db)
+                    session.commit()
+                    logger.info(f"Product Added to database:{msg_to_db} ")
+            # except Exception as e:
+            #     logger.info(f"Error Processing Message: {e} ")    
     finally:
         await consumer.stop()
 

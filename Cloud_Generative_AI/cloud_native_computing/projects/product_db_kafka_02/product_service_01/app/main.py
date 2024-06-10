@@ -26,9 +26,6 @@ async def create_topic ():
         admin_client.close()
 
 
-
-
-
 class Product(SQLModel, table=True):
     id : int|None = Field(default = None , primary_key= True)
     name:str = Field(index=True)
@@ -78,7 +75,7 @@ async  def add_product (product:Product , producer:Annotated[AIOKafkaProducer,De
 
     return product
 
-
+ 
 # @app.post("/products", response_model = Product)
 # async def add_product(product:Product, session:Annotated[Session,Depends(get_session)]):
 #    session.add(product)
