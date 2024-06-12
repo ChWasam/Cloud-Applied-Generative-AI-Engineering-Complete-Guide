@@ -13,7 +13,7 @@ services:
     #  Known as bind mount volumes
     # mount ka matlab hota ha do systems ko apna sath mount karwa dana
     # e.g kisis bhi storage ko mera system ka sath connect kar kah folder bna dana
-    # bind ka matlab ha ham apna pass kisi specific location ko bid kar rah ahan  
+    # bind ka matlab ha ham apna pass kisi specific location ko bid kar rah ahan
     ports:
       - "8000:8000" # Expose container port 8000 to host port 8000
 
@@ -53,6 +53,8 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT_HOST://localhost:9092,PLAINTEXT://broker:19092"
       #  Kafka ka bootstrap server 19092 pa chal raha hota ha aur 9092 pa host chal raha hota ha
+      # broker ke service start hui ha   -->9092 ke port pa 
+      #  broker jo listen kar raha ha ---> 19092 ke port pa 
       # PLAINTEXT host ho jai ga
       KAFKA_PROCESS_ROLES: "broker,controller"
       #  ak hi ko dono roles
