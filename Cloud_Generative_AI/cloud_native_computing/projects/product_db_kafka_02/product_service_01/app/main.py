@@ -74,4 +74,13 @@ async  def add_product (product:Product , producer:Annotated[AIOKafkaProducer,De
     await producer.send_and_wait(f"{settings.KAFKA_TOPIC}",serialized_product)
 
     return product
+#  Kafka ka topic me jo bhi data bhaja ga wo hamesha binary me jai ga 
+#   Note : Serialization jasa marzi(json ya through protobuf ) karain lakin kafka ka broker me hamesha data binary form me jata ah 
+#  jab json format me data bhaj raha han to wo binary me convert karna parta ha like b"hi"
+#  lakin protobuf already searialize binary me karta ha is lia b likhna ke zarorat hi nahi ha 
+# Topic data accept hi binary me karta ha 
+#  json ka size zyada hota ha aur protobuf ka size kam hota ha  
+
+#  operation type in protobuf. yeh is lia kia ha ku kah consumer ko to nahi pta kah aus na kya task perform karna ha 
+#  ta ka tomic me clear ho kah yeh cheez create, update ya del ho rahi ha 
 
