@@ -1,7 +1,7 @@
 import pprint
 print("wasam")
 
-# name : str = 700  # Getting error which means mypy extention is active 
+# name :str = 700  # Getting error which means mypy extention is active 
 
 # print(name)S
 
@@ -16,6 +16,7 @@ print("wasam")
 
 
 name : str = "Chaudhry Wasam Ur Rehman"
+
 print (name)
 print(type(name))
 print(id(name))
