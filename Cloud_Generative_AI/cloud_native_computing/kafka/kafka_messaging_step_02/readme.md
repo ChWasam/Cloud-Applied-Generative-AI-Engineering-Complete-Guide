@@ -146,6 +146,36 @@ async def main():
 asyncio.run(main())
 ```
 
+#### Proper Method 
+
+
+
+```
+import asyncio
+
+async def say_hello1():
+    print("Hello")
+    await asyncio.sleep(1)
+    print("World1")
+
+async def say_hello2():
+    print("Hello")
+    await asyncio.sleep(1)
+    print("World2")
+
+async def main():
+    task1 = say_hello1()
+    task2 = say_hello2()
+    await asyncio.gather(task1, task2)
+asyncio.run(main())
+
+or 
+    await asyncio.gather(say_hello(), say_hi())
+asyncio.run(main())
+
+
+```
+
 # What is an Event Loop?
 
 It runs in a loop and continuously checks for tasks that are ready to execute, runs them, and then waits for more tasks.
