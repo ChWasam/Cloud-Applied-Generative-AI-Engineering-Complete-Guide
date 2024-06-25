@@ -141,7 +141,7 @@ async def main():
  # Serve multiple customers concurrently
  tasks = [take_order_async() for _ in range(3)]
  await asyncio.gather(*tasks)
-# Matlab asyncio jis pa bhi lagai ga wo sab functions parallel me run ho raha ho ga 
+# Matlab asyncio.gather  jin bhi functions pa lagai ga wo sab functions parallel me run ho raha ho ga 
 
 asyncio.run(main())
 ```
