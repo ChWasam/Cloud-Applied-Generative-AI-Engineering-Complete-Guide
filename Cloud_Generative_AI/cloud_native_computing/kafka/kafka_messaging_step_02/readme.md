@@ -170,8 +170,8 @@ async def main():
 asyncio.run(main())
 
 or 
-    await asyncio.gather(say_hello(), say_hi())
-asyncio.run(main())
+#    await asyncio.gather(say_hello(), say_hi())
+#asyncio.run(main())
 
 
 ```
