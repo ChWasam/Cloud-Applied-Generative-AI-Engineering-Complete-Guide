@@ -1,4 +1,4 @@
-name: project-01
+name: project-04
 services:
   product:
     container_name: "product"
