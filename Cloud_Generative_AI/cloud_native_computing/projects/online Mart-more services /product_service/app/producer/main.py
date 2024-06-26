@@ -59,7 +59,7 @@ async def produce_message ():
     finally:
         await producer.stop()
 
-
+@asynccontextmanager
 async def lifespan(app: FastAPI):
     main.create_table()
     await create_topic()
