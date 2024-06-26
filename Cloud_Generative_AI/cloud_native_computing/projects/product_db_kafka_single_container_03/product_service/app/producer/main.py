@@ -59,7 +59,7 @@ async def produce_message ():
     finally:
         await producer.stop()
 
-
+@asynccontextmanager
 async def lifespan(app: FastAPI):
     main.create_table()
     await create_topic()
@@ -70,10 +70,26 @@ async def lifespan(app: FastAPI):
     finally:
         task.cancel()
         await task
-
 # task.cancel(): This cancels the task that was created to consume messages.
 # await task: This waits for the task to complete its cancellation.
 # preferable to ensure proper task management and resource cleanup
+# *****************************************************************************
+
+
+# async def lifespan(app: FastAPI):
+#     main.create_table()
+#     await create_topic()
+#     loop = asyncio.get_event_loop()
+#     task = loop.create_task(main.consume_message())
+#     await task
+#     try:
+#         yield
+#     finally:
+#         task.cancel()
+       
+#Above  Code is better if main.consume_message() is expected to finish quickly and you need its result before proceeding. However, if main.consume_message() is long-running, this approach will block the lifespan, which might not be desirable.
+
+
 
 
 #  Focus on the error given below 
