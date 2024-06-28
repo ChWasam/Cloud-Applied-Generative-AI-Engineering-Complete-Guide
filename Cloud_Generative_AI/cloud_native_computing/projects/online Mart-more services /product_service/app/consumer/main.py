@@ -24,8 +24,8 @@ async def retry_async(func, retries=5, delay=2, *args, **kwargs):
                 raise
 
 # Configure the logger 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# logging.basicConfig(level=logging.INFO)
+# logger = logging.getLogger(__name__)
 
 class Product(SQLModel, table=True):
     id : int|None = Field(default = None , primary_key= True)
@@ -67,6 +67,7 @@ async def consume_message():
     await retry_async(consumer.start)
     try:
         async for msg in consumer:
+            print(f"message from consumer : {msg}")
             try:
                 new_msg = product_pb2.Product()
                 new_msg.ParseFromString(msg.value)
@@ -89,10 +90,10 @@ async def consume_message():
                             session.add(current_product)
                             session.commit()
                             # session.refresh(current_product)
-                            logger.info(f"Product Updated in database:{msg_to_db} ")
+                            print(f"Product Updated in database:{msg_to_db} ")
                         else:
                             # raise HTTPException(status_code=400,detail=f"No Product with id :{id} is found !")
-                            logger.info(f"No Product with id :{msg_to_db.id} is found !")
+                           print(f"No Product with id :{msg_to_db.id} is found !")
                 elif new_msg.option == product_pb2.SelectOption.DELETE:
                     msg_to_db = Product(id = new_msg.id)
                     with Session(engine) as session:
@@ -102,9 +103,9 @@ async def consume_message():
                             session.commit()
                         else:
                             # raise HTTPException(status_code=400, detail=f"No Product with id :{id} is found !")
-                            logger.info(f"No Product with id :{msg_to_db.id} is found ! ")
+                            print(f"No Product with id :{msg_to_db.id} is found ! ")
             except Exception as e:
-                logger.info(f"Error Processing Message: {e} ")    
+                print(f"Error Processing Message: {e} ")    
     finally:
         await consumer.stop()
 
