@@ -4,13 +4,11 @@ from app import settings
 from contextlib import asynccontextmanager
 from aiokafka import AIOKafkaConsumer
 from typing import Annotated 
-from app import product_pb2
+from product_service import product_pb2
 from app import settings
 import asyncio
 import logging
 import psycopg
-import uuid
-from uuid import UUID
 
 # Retry utility
 async def retry_async(func, retries=5, delay=2, *args, **kwargs):
@@ -31,9 +29,7 @@ async def retry_async(func, retries=5, delay=2, *args, **kwargs):
 
 class Product(SQLModel, table=True):
     id : int|None = Field(default = None , primary_key= True)
-    product_id:UUID = Field(default_factory=uuid.uuid4, index=True)
     name:str = Field(index=True)
-    description:str = Field(index=True)
     price:int = Field(index=True)
     is_available: bool = Field(default=True)
 
@@ -65,7 +61,7 @@ async def consume_message():
     consumer = AIOKafkaConsumer(
         f"{settings.KAFKA_TOPIC}",
         bootstrap_servers= f"{settings.BOOTSTRAP_SERVER}",
-        group_id= f"{settings.KAFKA_CONSUMER_GROUP_ID_FOR_PRODUCT}",
+        group_id= f"{settings.KAFKA_CONSUMER_GROUP_ID_FOR_INVENTORY}",
         auto_offset_reset='earliest'
     )
     await retry_async(consumer.start)
@@ -77,19 +73,18 @@ async def consume_message():
                 new_msg.ParseFromString(msg.value)
                 print(f"new_msg:{new_msg}")
                 if new_msg.option == product_pb2.SelectOption.CREATE:
-                    msg_to_db = Product(name = new_msg.name,description = new_msg.description, price = new_msg.price , is_available = new_msg.is_available )
+                    msg_to_db = Product(name = new_msg.name, price = new_msg.price , is_available = new_msg.is_available )
                     print(f"msg_to_db:{msg_to_db}")
                     with Session(engine) as session:
                         session.add(msg_to_db)
                         session.commit()
-                        print(f"Product Added to database:{msg_to_db} ")
+                        logger.info(f"Product Added to database:{msg_to_db} ")
                 elif new_msg.option == product_pb2.SelectOption.UPDATE:
-                    msg_to_db = Product(product_id = new_msg.product_id, name = new_msg.name, description = new_msg.description, price = new_msg.price , is_available = new_msg.is_available)
+                    msg_to_db = Product(id = new_msg.id, name = new_msg.name, price = new_msg.price , is_available = new_msg.is_available)
                     with Session(engine) as session:
-                        current_product = session.exec(select(Product).where(Product.product_id == msg_to_db.product_id)).first()
+                        current_product = session.exec(select(Product).where(Product.id == msg_to_db.id)).first()
                         if current_product:
                             current_product.name = msg_to_db.name
-                            current_product.description = msg_to_db.description
                             current_product.price = msg_to_db.price
                             current_product.is_available = msg_to_db.is_available
                             session.add(current_product)
@@ -98,18 +93,17 @@ async def consume_message():
                             print(f"Product Updated in database:{msg_to_db} ")
                         else:
                             # raise HTTPException(status_code=400,detail=f"No Product with id :{id} is found !")
-                           print(f"No Product with product_id :{msg_to_db.product_id} is  found !")
+                           print(f"No Product with id :{msg_to_db.id} is found !")
                 elif new_msg.option == product_pb2.SelectOption.DELETE:
-                    msg_to_db = Product(product_id = new_msg.product_id)
+                    msg_to_db = Product(id = new_msg.id)
                     with Session(engine) as session:
-                        current_product = session.exec(select(Product).where(Product.product_id == msg_to_db.product_id)).first()
+                        current_product = session.exec(select(Product).where(Product.id == msg_to_db.id)).first()
                         if current_product:
-                            print(f"current_product :{current_product} is  found ! ")
                             session.delete(current_product)
                             session.commit()
                         else:
                             # raise HTTPException(status_code=400, detail=f"No Product with id :{id} is found !")
-                            print(f"No Product with id :{msg_to_db.product_id} is  found ! ")
+                            print(f"No Product with id :{msg_to_db.id} is found ! ")
             except Exception as e:
                 print(f"Error Processing Message: {e} ")    
     finally:

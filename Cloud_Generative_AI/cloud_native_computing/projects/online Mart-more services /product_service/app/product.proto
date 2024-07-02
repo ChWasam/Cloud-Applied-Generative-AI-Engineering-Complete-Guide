@@ -1,14 +1,19 @@
 syntax = "proto3";
+
 enum SelectOption {
-    CREATE = 0;
-    UPDATE = 1;
-    DELETE = 2;
+    GET = 0;
+    GET_ALL = 1;
+    CREATE = 2;
+    UPDATE = 3;
+    DELETE = 4;
 }
 
 message Product {
     int32 id =1;
-    string name = 2;
-    float price =3;
-    bool is_available = 4;
-    SelectOption option =5;
+    string product_id=2;
+    string name = 3;
+    string description =4;
+    float price =5;
+    bool is_available = 6;
+    SelectOption option =7;
 }

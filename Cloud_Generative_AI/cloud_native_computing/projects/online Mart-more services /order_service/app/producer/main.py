@@ -5,11 +5,9 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 from aiokafka import AIOKafkaProducer 
 from aiokafka.admin import AIOKafkaAdminClient,NewTopic
-from app import product_pb2
+from app import order_pb2
 from app import settings
 from app.consumer import main
-import uuid 
-from uuid import UUID 
 import asyncio
 import psycopg
 
@@ -49,9 +47,7 @@ async def create_topic ():
 
 class Product(SQLModel):
     # id : int|None = Field(default = None , primary_key= True)
-    # product_id:UUID = Field(default_factory=uuid.uuid4, index=True)
     name:str = Field(index=True)
-    description:str = Field(index=True)
     price:int = Field(index=True)
     is_available: bool = Field(default=True)
 
@@ -97,16 +93,12 @@ app:FastAPI = FastAPI(lifespan=lifespan)
 async def read_root():
     return {"Hello":"Product Service"}
 
-
-
-
-
 @app.post("/products", response_model=dict)
 async  def add_product (product:Product , producer:Annotated[AIOKafkaProducer,Depends(produce_message)]):
-    product_proto = product_pb2.Product(name = product.name, description = product.description , price = product.price , is_available = product.is_available, option = product_pb2.SelectOption.CREATE)
+    product_proto = product_pb2.Product(name = product.name, price = product.price , is_available = product.is_available, option = product_pb2.SelectOption.CREATE)
     serialized_product = product_proto.SerializeToString()
     await producer.send_and_wait(f"{settings.KAFKA_TOPIC}",serialized_product)
-    return {f"product with name : {product.name} " : "added" }
+    return {f"product with name : {product.name}  " : "added" }
 #  Kafka ka topic me jo bhi data bhaja ga wo hamesha binary me jai ga 
 #   Note : Serialization jasa marzi(json ya through protobuf ) karain lakin kafka ka broker me hamesha data binary form me jata ah 
 #  jab json format me data bhaj raha han to wo binary me convert karna parta ha like b"hi"
@@ -117,20 +109,20 @@ async  def add_product (product:Product , producer:Annotated[AIOKafkaProducer,De
 #  operation type in protobuf. yeh is lia kia ha ku kah consumer ko to nahi pta kah aus na kya task perform karna ha 
 #  ta ka tomic me clear ho kah yeh cheez create, update ya del ho rahi ha 
 
-@app.put("/products/{product_id}", response_model=dict)
-async  def update_product (product_id:UUID, product:Product , producer:Annotated[AIOKafkaProducer,Depends(produce_message)]):
-    product_proto = product_pb2.Product(product_id= str(product_id), name = product.name, description = product.description ,price = product.price , is_available = product.is_available, option = product_pb2.SelectOption.UPDATE)
+@app.put("/products/{id}", response_model=dict )
+async  def update_product (id:int, product:Product , producer:Annotated[AIOKafkaProducer,Depends(produce_message)]):
+    product_proto = product_pb2.Product(id= id, name = product.name, price = product.price , is_available = product.is_available, option = product_pb2.SelectOption.UPDATE)
     serialized_product = product_proto.SerializeToString()
     await producer.send_and_wait(f"{settings.KAFKA_TOPIC}",serialized_product)
-    return {f"product with product_id:{product_id}  ": {"Updated"}}
+    return {f"product with id:{id}  ": {"Updated"}}
 
 
-@app.delete("/products/{product_id}", response_model=dict)
-async  def delete_product (product_id:UUID, producer:Annotated[AIOKafkaProducer,Depends(produce_message)]):
-    product_proto = product_pb2.Product(product_id= str(product_id), option = product_pb2.SelectOption.DELETE)
+@app.delete("/products/{id}", response_model=dict)
+async  def delete_product (id:int, producer:Annotated[AIOKafkaProducer,Depends(produce_message)]):
+    product_proto = product_pb2.Product(id= id, option = product_pb2.SelectOption.DELETE)
     serialized_product = product_proto.SerializeToString()
     await producer.send_and_wait(f"{settings.KAFKA_TOPIC}",serialized_product)
-    return {f"product with product_id:{product_id}  ": {"Deleted"}}
+    return {f"product with id:{id}  ": {"Deleted"}}
 
 
 
