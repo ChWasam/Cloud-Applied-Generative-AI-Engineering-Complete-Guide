@@ -2,7 +2,7 @@ from sqlmodel import SQLModel,Field,create_engine,select, Session
 from fastapi import FastAPI,Depends,HTTPException
 from app import settings
 from contextlib import asynccontextmanager
-from aiokafka import AIOKafkaConsumer
+from aiokafka import AIOKafkaConsumer,AIOKafkaProducer
 from typing import Annotated 
 from app import product_pb2
 from app import settings
@@ -61,7 +61,7 @@ def create_table():
 
 
 # writing Consumer code 
-async def consume_message():
+async def consume_message_request():
     consumer = AIOKafkaConsumer(
         f"{settings.KAFKA_TOPIC}",
         bootstrap_servers= f"{settings.BOOTSTRAP_SERVER}",
@@ -76,7 +76,53 @@ async def consume_message():
                 new_msg = product_pb2.Product()
                 new_msg.ParseFromString(msg.value)
                 print(f"new_msg:{new_msg}")
-                if new_msg.option == product_pb2.SelectOption.CREATE:
+                if new_msg.option == product_pb2.SelectOption.GET_ALL:
+                    with Session(engine) as session:
+                        products_list_from_db = session.exec(select(Product)).all()
+                        print(f"List of products from database:{products_list_from_db} ")
+                        product_list_proto = product_pb2.ProductList()
+                        for product in products_list_from_db:
+                            product_proto = product_pb2.Product(
+                                id=product.id,
+                                product_id=str(product.product_id),
+                                name=product.name,
+                                description=product.description,
+                                price=product.price,
+                                is_available=product.is_available,
+                            )
+                            product_list_proto.products.append(product_proto)
+                        print(f"List of products in proto :{product_list_proto} ")
+                        producer = AIOKafkaProducer(bootstrap_servers= f"{settings.BOOTSTRAP_SERVER}")
+                        await retry_async(producer.start)
+                        try:
+                            serialized_product_list = product_list_proto.SerializeToString()
+                            await producer.send_and_wait(f"{settings.KAFKA_TOPIC_GET}", serialized_product_list)
+                        finally:
+                            await producer.stop()
+                        print(f"List of products sent back from database: {product_list_proto} ")
+                elif new_msg.option == product_pb2.SelectOption.GET:
+                    with Session(engine) as session:
+                        msg_to_db = Product(product_id = new_msg.product_id)
+                        product = session.exec(select(Product).where(Product.product_id == msg_to_db.product_id)).first()
+                        print(f"product from database:{product}")
+                        product_proto = product_pb2.Product(
+                            id=product.id,
+                            product_id=str(product.product_id),
+                            name=product.name,
+                            description=product.description,
+                            price=product.price,
+                            is_available=product.is_available,
+                        )
+                        print(f"Product in proto :{product_proto} ")
+                        producer = AIOKafkaProducer(bootstrap_servers= f"{settings.BOOTSTRAP_SERVER}")
+                        await retry_async(producer.start)
+                        try:
+                            serialized_product = product_proto.SerializeToString()
+                            await producer.send_and_wait(f"{settings.KAFKA_TOPIC_GET}", serialized_product)
+                        finally:
+                            await producer.stop()
+                        print(f"product sent back from database: {product_proto} ")
+                elif new_msg.option == product_pb2.SelectOption.CREATE:
                     msg_to_db = Product(name = new_msg.name,description = new_msg.description, price = new_msg.price , is_available = new_msg.is_available )
                     print(f"msg_to_db:{msg_to_db}")
                     with Session(engine) as session:

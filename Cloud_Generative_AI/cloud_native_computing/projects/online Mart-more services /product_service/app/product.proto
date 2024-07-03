@@ -8,6 +8,7 @@ enum SelectOption {
     DELETE = 4;
 }
 
+
 message Product {
     int32 id =1;
     string product_id=2;
@@ -15,5 +16,11 @@ message Product {
     string description =4;
     float price =5;
     bool is_available = 6;
-    SelectOption option =7;
+    string error_message = 7;
+    SelectOption option =8;
+    bool get_status = 9;
+}
+
+message ProductList {
+    repeated Product products = 1;
 }
