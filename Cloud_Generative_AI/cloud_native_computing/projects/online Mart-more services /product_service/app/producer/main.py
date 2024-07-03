@@ -52,7 +52,29 @@ async def create_topic ():
 
 
 
-async def consume_message_response():
+async def consume_message_response_get_all():
+    consumer = AIOKafkaConsumer(
+    f"{settings.KAFKA_TOPIC_GET}",
+    bootstrap_servers= f"{settings.BOOTSTRAP_SERVER}",
+    group_id= f"{settings.KAFKA_CONSUMER_GROUP_ID_FOR_PRODUCT_GET}",
+    auto_offset_reset='earliest'
+    )
+    await retry_async(consumer.start)
+    try:
+        async for msg in consumer:
+            print(f"message from consumer : {msg}")
+            try:
+                new_msg = product_pb2.ProductList()
+                new_msg.ParseFromString(msg.value)
+                print(f"new_msg on producer side:{new_msg}")
+                return new_msg
+            except Exception as e:
+                print(f"Error Processing Message: {e} ")    
+    finally:
+        await consumer.stop()
+
+
+async def consume_message_response_get():
     consumer = AIOKafkaConsumer(
     f"{settings.KAFKA_TOPIC_GET}",
     bootstrap_servers= f"{settings.BOOTSTRAP_SERVER}",
@@ -65,10 +87,8 @@ async def consume_message_response():
             print(f"message from consumer : {msg}")
             try:
                 new_msg = product_pb2.Product()
-                #  yahan aupar bhi change karna para ga ku kah list ai ge to ProductList() likhna para ga ur agar Product ai ga to Product() likhna para ga
                 new_msg.ParseFromString(msg.value)
                 print(f"new_msg on producer side:{new_msg}")
-                #  Ham yahan if else sa define kar sakt han kah  yeh kis ka lia msg aya ha
                 return new_msg
             except Exception as e:
                 print(f"Error Processing Message: {e} ")    
@@ -135,8 +155,7 @@ async def get_all_products(producer:Annotated[AIOKafkaProducer,Depends(produce_m
     product_proto = product_pb2.Product(option = product_pb2.SelectOption.GET_ALL)
     serialized_product = product_proto.SerializeToString()
     await producer.send_and_wait(f"{settings.KAFKA_TOPIC}",serialized_product)
-    product_list_proto = await consume_message_response()
-    # product_list_proto = MessageToDict(product_list_proto)
+    product_list_proto = await consume_message_response_get_all()
     product_list = [
         {
             "id":product.id,
@@ -147,14 +166,8 @@ async def get_all_products(producer:Annotated[AIOKafkaProducer,Depends(produce_m
             "is_available":product.is_available,
 
         }
-
         for product in product_list_proto.products
-
-
     ]
-
-
-
     return product_list
 
 
@@ -164,7 +177,7 @@ async def get_a_product(product_id:UUID, producer:Annotated[AIOKafkaProducer,Dep
     product_proto = product_pb2.Product(product_id =str(product_id),  option = product_pb2.SelectOption.GET)
     serialized_product = product_proto.SerializeToString()
     await producer.send_and_wait(f"{settings.KAFKA_TOPIC}",serialized_product)
-    product_proto = await consume_message_response()
+    product_proto = await consume_message_response_get()
     return MessageToDict(product_proto)
 
 

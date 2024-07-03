@@ -15,37 +15,6 @@ services:
     volumes:
       - ./product_service:/code/
 
-# 02  order service 
-  order:
-    container_name: "order"
-    hostname: "order"
-    build:
-      context: ./order_service
-      dockerfile: Dockerfile.dev
-    depends_on:
-      - broker
-      - postgres_db_order
-    ports:
-      - "8002:8001" # Expose container port 8002 to host port 8002
-    volumes:
-      - ./order_service:/code/
-
-# 03  inventory service 
-  inventory:
-    container_name: "inventory"
-    hostname: "inventory"
-    build:
-      context: ./inventory_service
-      dockerfile: Dockerfile.dev
-    depends_on:
-      - broker
-      - postgres_db_inventory
-    ports:
-      - "8003:8001" # Expose container port 8003 to host port 8003
-    volumes:
-      - ./inventory_service:/code/
-
-
   broker:
     image: apache/kafka:3.7.0
     hostname: broker
@@ -95,44 +64,11 @@ services:
     volumes:
       - postgres_db_product:/var/lib/postgresql/data
 
-# 02  postgres_db for order  service 
-
-  postgres_db_order:
-    image: postgres:latest # Use the official PostgreSQL image
-    restart: always
-    container_name: PostgresCont_order
-    environment:
-      - POSTGRES_USER=wasam
-      - POSTGRES_PASSWORD=wasam_password
-      - POSTGRES_DB=wasam_database_order
-    ports:
-      - "5434:5432"
-    volumes:
-      - postgres_db_order:/var/lib/postgresql/data
-
-# 03  postgres_db for inventory  service 
-
-  postgres_db_inventory:
-    image: postgres:latest # Use the official PostgreSQL image
-    restart: always
-    container_name: PostgresCont_inventory
-    environment:
-      - POSTGRES_USER=wasam
-      - POSTGRES_PASSWORD=wasam_password
-      - POSTGRES_DB=wasam_database_inventory
-    ports:
-      - "5435:5432"
-    volumes:
-      - postgres_db_inventory:/var/lib/postgresql/data
-
 
 volumes:
   postgres_db_product:
     driver: local
-  postgres_db_order:
-    driver: local
-  postgres_db_inventory:
-    driver: local
+
 
 networks:
   default:
