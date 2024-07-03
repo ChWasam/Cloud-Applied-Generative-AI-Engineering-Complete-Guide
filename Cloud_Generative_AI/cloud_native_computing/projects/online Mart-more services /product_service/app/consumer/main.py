@@ -101,8 +101,8 @@ async def consume_message_request():
                             await producer.stop()
                         print(f"List of products sent back from database: {product_list_proto} ")
                 elif new_msg.option == product_pb2.SelectOption.GET:
+                    msg_to_db = Product(product_id = new_msg.product_id)
                     with Session(engine) as session:
-                        msg_to_db = Product(product_id = new_msg.product_id)
                         product = session.exec(select(Product).where(Product.product_id == msg_to_db.product_id)).first()
                         print(f"product from database:{product}")
                         product_proto = product_pb2.Product(

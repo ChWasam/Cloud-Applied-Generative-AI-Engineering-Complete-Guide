@@ -64,10 +64,9 @@ async def consume_message_response():
         async for msg in consumer:
             print(f"message from consumer : {msg}")
             try:
-                new_msg = product_pb2.ProductList()
+                new_msg = product_pb2.Product()
                 #  yahan aupar bhi change karna para ga ku kah list ai ge to ProductList() likhna para ga ur agar Product ai ga to Product() likhna para ga
                 new_msg.ParseFromString(msg.value)
-                
                 print(f"new_msg on producer side:{new_msg}")
                 #  Ham yahan if else sa define kar sakt han kah  yeh kis ka lia msg aya ha
                 return new_msg
@@ -131,13 +130,32 @@ async def read_root():
     return {"Hello":"Product Service"}
 
 
-@app.get("/products" ,response_model = dict)
+@app.get("/products", response_model=list )
 async def get_all_products(producer:Annotated[AIOKafkaProducer,Depends(produce_message)]):
     product_proto = product_pb2.Product(option = product_pb2.SelectOption.GET_ALL)
     serialized_product = product_proto.SerializeToString()
     await producer.send_and_wait(f"{settings.KAFKA_TOPIC}",serialized_product)
     product_list_proto = await consume_message_response()
-    return MessageToDict(product_list_proto)
+    # product_list_proto = MessageToDict(product_list_proto)
+    product_list = [
+        {
+            "id":product.id,
+            "product_id":str(product.product_id),
+            "name":product.name,
+            "description":product.description,
+            "price":product.price,
+            "is_available":product.is_available,
+
+        }
+
+        for product in product_list_proto.products
+
+
+    ]
+
+
+
+    return product_list
 
 
 
