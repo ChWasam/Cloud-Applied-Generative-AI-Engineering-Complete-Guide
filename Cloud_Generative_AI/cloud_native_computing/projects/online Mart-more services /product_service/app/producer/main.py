@@ -159,6 +159,7 @@ async def get_all_products(producer:Annotated[AIOKafkaProducer,Depends(produce_m
     serialized_product = product_proto.SerializeToString()
     await producer.send_and_wait(f"{settings.KAFKA_TOPIC}",serialized_product)
     product_list_proto = await consume_message_response_get_all()
+
     product_list = [
         {
             "id":product.id,
@@ -185,11 +186,6 @@ async def get_a_product(product_id:UUID, producer:Annotated[AIOKafkaProducer,Dep
         raise HTTPException(status_code=product_proto.status, detail=product_proto.error_message)
     else:
         return MessageToDict(product_proto)
-
-
-
-
-
 
 
 @app.post("/products", response_model=dict)
