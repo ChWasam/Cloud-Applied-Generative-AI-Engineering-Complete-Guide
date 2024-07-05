@@ -17,9 +17,11 @@ logger = logging.getLogger(__name__)
 connection_string = str(settings.DATABASE_URL).replace("postgresql", "postgresql+psycopg")
 engine = create_engine(connection_string, pool_recycle=300, pool_size=10, echo=True)
 
+#  Function to create tables 
 def create_table():
     SQLModel.metadata.create_all(engine)
 
+#  Used for data validation and table fields 
 class Product(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     product_id: UUID = Field(default_factory=uuid.uuid4, index=True)
@@ -40,6 +42,7 @@ async def retry_async(func, retries=5, delay=2, *args, **kwargs):
             else:
                 raise
 
+#  Functions to produce message based on topic name and message 
 async def produce_message(topic, message):
     producer = AIOKafkaProducer(bootstrap_servers=settings.BOOTSTRAP_SERVER)
     await retry_async(producer.start)
@@ -48,6 +51,7 @@ async def produce_message(topic, message):
     finally:
         await producer.stop()
 
+#  Function to handle get all products request from producer side from where API is called to get all products 
 async def handle_get_all_products():
     with Session(engine) as session:
         products_list = session.exec(select(Product)).all()
@@ -66,6 +70,8 @@ async def handle_get_all_products():
         await produce_message(settings.KAFKA_TOPIC_GET, serialized_product_list)
         logger.info(f"List of products sent back from database: {product_list_proto}")
 
+
+#  Function to handle get product request from producer side from where API is called to get a  products 
 async def handle_get_product(product_id):
     with Session(engine) as session:
         product = session.exec(select(Product).where(Product.product_id == product_id)).first()
@@ -89,6 +95,8 @@ async def handle_get_product(product_id):
             serialized_product = product_proto.SerializeToString()
             await produce_message(settings.KAFKA_TOPIC_GET, serialized_product)
 
+
+#  Function to handle add product request from producer side from where API is called to add product to database 
 async def handle_create_product(new_msg):
     product = Product(
         name=new_msg.name,
@@ -101,6 +109,8 @@ async def handle_create_product(new_msg):
         session.commit()
     logger.info(f"Product added to database: {product}")
 
+
+#  Function to handle update product request from producer side from where API is called to update product to database 
 async def handle_update_product(new_msg):
     with Session(engine) as session:
         product = session.exec(select(Product).where(Product.product_id == new_msg.product_id)).first()
@@ -131,6 +141,8 @@ async def handle_update_product(new_msg):
             serialized_product = product_proto.SerializeToString()
             await produce_message(settings.KAFKA_TOPIC_GET, serialized_product)
 
+
+#  Function to handle delete product request from producer side from where API is called to delete product from database 
 async def handle_delete_product(product_id):
     with Session(engine) as session:
         product = session.exec(select(Product).where(Product.product_id == product_id)).first()
@@ -152,6 +164,8 @@ async def handle_delete_product(product_id):
             serialized_product = product_proto.SerializeToString()
             await produce_message(settings.KAFKA_TOPIC_GET, serialized_product)
 
+
+#  Function to consume message from the APIs on the producer side and perform functionalities according to the request made by APIs 
 async def consume_message_request():
     consumer = AIOKafkaConsumer(
         settings.KAFKA_TOPIC,

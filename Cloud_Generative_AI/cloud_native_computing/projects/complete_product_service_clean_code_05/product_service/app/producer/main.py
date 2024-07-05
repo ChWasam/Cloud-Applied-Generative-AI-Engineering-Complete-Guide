@@ -51,7 +51,7 @@ async def create_topic ():
     finally:
         await admin_client.close()
 
-
+#  Function to consume list of all products from kafkatopic
 async def consume_message_response_get_all():
     consumer = AIOKafkaConsumer(
     f"{settings.KAFKA_TOPIC_GET}",
@@ -73,6 +73,7 @@ async def consume_message_response_get_all():
     finally:
         await consumer.stop()
 
+#  Function to consume all messages other than list of all products from kafkatopic
 async def consume_message_response_get():
     consumer = AIOKafkaConsumer(
     f"{settings.KAFKA_TOPIC_GET}",
@@ -95,6 +96,7 @@ async def consume_message_response_get():
         await consumer.stop()
 
 
+# Pydantic dataValidation 
 class Product(SQLModel):
     id : int|None = Field(default = None , primary_key= True)
     product_id:UUID = Field(default_factory=uuid.uuid4, index=True)
@@ -103,6 +105,7 @@ class Product(SQLModel):
     price:float= Field(index=True)
     is_available: bool = Field(default=True)
 
+#  Function to produce message. I will work as a dependency injection for APIs
 async def produce_message():
     producer = AIOKafkaProducer(bootstrap_servers= f"{settings.BOOTSTRAP_SERVER}")
     await retry_async(producer.start)
@@ -111,6 +114,8 @@ async def produce_message():
     finally:
         await producer.stop()
 
+
+#  It contains all the instructions that will run when the application will start
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     main.create_table()
@@ -125,12 +130,13 @@ async def lifespan(app: FastAPI):
 
 
 
+#  Home Endpoint
 app:FastAPI = FastAPI(lifespan=lifespan )
 @app.get("/")
 async def read_root():
     return {"Hello":"Product Service"}
 
-
+#  Endpoint to get all the products
 @app.get("/products", response_model= list[Product])
 async def get_all_products(producer:Annotated[AIOKafkaProducer,Depends(produce_message)]):
     product_proto = product_pb2.Product(option = product_pb2.SelectOption.GET_ALL)
@@ -153,7 +159,7 @@ async def get_all_products(producer:Annotated[AIOKafkaProducer,Depends(produce_m
     return product_list
 
 
-
+#  Endpoint to get the single product based on endpoint 
 @app.get("/products/{product_id}", response_model=dict)
 async def get_a_product(product_id:UUID, producer:Annotated[AIOKafkaProducer,Depends(produce_message)]):
     product_proto = product_pb2.Product(product_id =str(product_id),  option = product_pb2.SelectOption.GET)
@@ -166,6 +172,7 @@ async def get_a_product(product_id:UUID, producer:Annotated[AIOKafkaProducer,Dep
         return MessageToDict(product_proto)
 
 
+#  Endpoint to add product to database 
 @app.post("/products", response_model=dict)
 async  def add_product (product:Product , producer:Annotated[AIOKafkaProducer,Depends(produce_message)]):
     product_proto = product_pb2.Product(name = product.name, description = product.description , price = product.price , is_available = product.is_available, option = product_pb2.SelectOption.CREATE)
@@ -174,6 +181,8 @@ async  def add_product (product:Product , producer:Annotated[AIOKafkaProducer,De
 
     return {f"product with name : {product.name} " : "added" }
 
+
+#  Endpoint to update product to database 
 @app.put("/products/{product_id}", response_model = dict)
 async  def update_product (product_id:UUID, product:Product , producer:Annotated[AIOKafkaProducer,Depends(produce_message)]):
     product_proto = product_pb2.Product(product_id= str(product_id), name = product.name, description = product.description ,price = product.price , is_available = product.is_available, option = product_pb2.SelectOption.UPDATE)
@@ -186,6 +195,7 @@ async  def update_product (product_id:UUID, product:Product , producer:Annotated
         return{"Updated Message": MessageToDict(product_proto)}
 
 
+#  Endpoint to delete product from database 
 @app.delete("/products/{product_id}", response_model=dict)
 async  def delete_product (product_id:UUID, producer:Annotated[AIOKafkaProducer,Depends(produce_message)]):
     product_proto = product_pb2.Product(product_id= str(product_id), option = product_pb2.SelectOption.DELETE)
