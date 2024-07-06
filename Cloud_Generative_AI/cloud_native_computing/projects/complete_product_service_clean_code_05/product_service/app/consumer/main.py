@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field, create_engine, select, Session
 from fastapi import FastAPI, Depends, HTTPException
-from app import settings, product_pb2
+from app import settings, product_pb2,db
 from contextlib import asynccontextmanager
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from typing import Annotated
@@ -13,13 +13,7 @@ from uuid import UUID
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Database setup
-connection_string = str(settings.DATABASE_URL).replace("postgresql", "postgresql+psycopg")
-engine = create_engine(connection_string, pool_recycle=300, pool_size=10, echo=True)
 
-#  Function to create tables 
-def create_table():
-    SQLModel.metadata.create_all(engine)
 
 #  Used for data validation and table fields 
 class Product(SQLModel, table=True):

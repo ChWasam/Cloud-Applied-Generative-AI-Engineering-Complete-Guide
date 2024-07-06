@@ -1,14 +1,15 @@
 from sqlmodel import SQLModel,Field,create_engine,select, Session
 from google.protobuf.json_format import MessageToDict
 from fastapi import FastAPI,Depends,HTTPException
-from app import settings
 from contextlib import asynccontextmanager
 from typing import Annotated
 from aiokafka import AIOKafkaProducer , AIOKafkaConsumer
 from aiokafka.admin import AIOKafkaAdminClient,NewTopic
 from app import product_pb2
 from app import settings
+from app import db 
 from app.consumer import main
+
 import uuid 
 from uuid import UUID 
 import asyncio
@@ -118,7 +119,7 @@ async def produce_message():
 #  It contains all the instructions that will run when the application will start
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    main.create_table()
+    db.create_table()
     await create_topic()
     loop = asyncio.get_event_loop()
     task = loop.create_task(main.consume_message_request())
@@ -130,13 +131,13 @@ async def lifespan(app: FastAPI):
 
 
 
-#  Home Endpoint
+# Home Endpoint
 app:FastAPI = FastAPI(lifespan=lifespan )
 @app.get("/")
 async def read_root():
     return {"Hello":"Product Service"}
 
-#  Endpoint to get all the products
+# Endpoint to get all the products
 @app.get("/products", response_model= list[Product])
 async def get_all_products(producer:Annotated[AIOKafkaProducer,Depends(produce_message)]):
     product_proto = product_pb2.Product(option = product_pb2.SelectOption.GET_ALL)
