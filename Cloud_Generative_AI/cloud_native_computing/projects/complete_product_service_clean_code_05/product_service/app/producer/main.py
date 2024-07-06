@@ -9,7 +9,6 @@ from app import product_pb2
 from app import settings
 from app import db 
 from app.consumer import main
-
 import uuid 
 from uuid import UUID 
 import asyncio

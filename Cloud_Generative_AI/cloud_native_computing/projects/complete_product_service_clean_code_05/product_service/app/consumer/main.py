@@ -1,9 +1,6 @@
 from sqlmodel import SQLModel, Field, create_engine, select, Session
-from fastapi import FastAPI, Depends, HTTPException
 from app import settings, product_pb2,db
-from contextlib import asynccontextmanager
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
-from typing import Annotated
 import asyncio
 import logging
 import uuid
@@ -47,7 +44,7 @@ async def produce_message(topic, message):
 
 #  Function to handle get all products request from producer side from where API is called to get all products 
 async def handle_get_all_products():
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         products_list = session.exec(select(Product)).all()
         product_list_proto = product_pb2.ProductList()
         for product in products_list:
@@ -67,7 +64,7 @@ async def handle_get_all_products():
 
 #  Function to handle get product request from producer side from where API is called to get a  products 
 async def handle_get_product(product_id):
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         product = session.exec(select(Product).where(Product.product_id == product_id)).first()
         if product:
             product_proto = product_pb2.Product(
@@ -98,7 +95,7 @@ async def handle_create_product(new_msg):
         price=new_msg.price,
         is_available=new_msg.is_available
     )
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         session.add(product)
         session.commit()
     logger.info(f"Product added to database: {product}")
@@ -106,7 +103,7 @@ async def handle_create_product(new_msg):
 
 #  Function to handle update product request from producer side from where API is called to update product to database 
 async def handle_update_product(new_msg):
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         product = session.exec(select(Product).where(Product.product_id == new_msg.product_id)).first()
         if product:
             product.name = new_msg.name
@@ -138,7 +135,7 @@ async def handle_update_product(new_msg):
 
 #  Function to handle delete product request from producer side from where API is called to delete product from database 
 async def handle_delete_product(product_id):
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         product = session.exec(select(Product).where(Product.product_id == product_id)).first()
         if product:
             session.delete(product)
