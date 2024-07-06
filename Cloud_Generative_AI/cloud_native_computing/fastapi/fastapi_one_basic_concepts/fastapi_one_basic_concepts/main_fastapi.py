@@ -27,9 +27,12 @@ def get_book_name(book_name:str):
 @app.get("/file/{file_path:path}")
 def file(file_path:str):
     return {"file":file_path}
+# This demonstrates how the path parameter captures the entire file path and includes it in the response. This can be useful in applications where you need to handle dynamic file paths or route segments that include slashes.
+
+
 
 # we can make multiple variables in one route
-#  we can use them anywhere in that route 
+# we can use them anywhere in that route 
 @app.get("/{product_name}/product/{product_id}")
 def product_info(product_name:str,product_id:int):
     return {
@@ -37,7 +40,7 @@ def product_info(product_name:str,product_id:int):
         "prduct_id":product_id
     }
  
-
+# ************************************************************
 #  Query Parameters 
 
 # starts with ?
@@ -104,11 +107,16 @@ def create_item(product:Product):
     return product.name
 # update value  (we will use put)
 
+
+
 @app.put("/products/{product_id}")
-def update_product(product_id:int, product:Product):
-    return {"product_id":product_id, **product.model_dump()}
+def update_product(product_id: int, product: Product):
+    return {"product_id": product_id, **product.model_dump()}
+
     # return {"product_id":product_id, **product.dict()}
 #  both work well but dict is depricated  
+
+# The **product.model_dump() uses dictionary unpacking to include all the fields from the Product model instance as key-value pairs in the response dictionary.
 
 
 #  For query parameter result can be 
@@ -125,7 +133,19 @@ def update_product(product_id:int, product:Product):
 def fav_product (product:str = Body(embed=True)):
     return product
 
+# Json body :
+#  {
+#   "product": "My Favorite Product"
+# }
 
+
+# @app.post("/products/product")
+# def fav_product (product:str):
+#     return product
+
+#  JSON Body
+# Without embed=True, you would send the JSON body as:
+# Without embed=True, you would send the JSON body as:
 
 
 
