@@ -3,8 +3,13 @@
 
 
 import requests
-from requests.models import Response
+# used for typing
+#  used for response
+from requests.models import Response  
+
+#  used for headers
 from requests.structures import CaseInsensitiveDict
+
 from fastapi import FastAPI
 
 # 1
